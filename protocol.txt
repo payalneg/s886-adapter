@@ -1,0 +1,45 @@
+INPUT:
+
+01 14 01 01 05 80 16 01 04 01 05 01 64 05 01 86 00 00 06 66
+01 14 01 01 03 90 14 01 04 03 01 00 32 01 01 86 00 00 05 24
+01 14 01 01 03 90 14 01 04 03 01 00 32 01 01 86 00 A0 05 84 
+01 14 01 01 06 90 14 01 04 03 01 00 32 01 01 86 00 00 05 21 
+
+0 = 01 
+1 = 14
+2 = 01
+3 - Drive mode Settings 0 = Pedal, 1 = Electrict drive, 2 - Both
+4 - gear  1 = 3 2 = 6 3 = 9 4 = 0C 5 = 0F 0 = 0 / 05 0a0f
+5 - Direct start B0 Kick to start F0
+6 - magnets count
+7,8 - wheel deameter 26inc = 0x104
+9 - Pedal assist sensitive
+10 - Pedal assist starting intensity
+11 = 0 
+12 - speed limiti 53 = 0x35
+13 = Current limit value
+14 15 - volt battery cutoff 24v = 0xBE 36v = 0x0122 48v = 0x0186  52v = 0x01a4 60v = 01ea 
+16,17 - throttle 0 - 0x3FF
+18 - first 0-3 bits = Magnets Number in pedal Assist sensor, 6 bit = cruise, 7 bit - ebrake
+19 - CRC
+
+OUTPUT:
+02 0E 01 40 80 00 00 00 17 70 00 00 FF 55 
+02 0E 01 40 80 00 00 00 04 01 00 00 FF 37
+02 0E 01 40 80 00 00 00 04 8F 00 00 FF B9
+02 0E 01 40 80 00 00 00 04 01 00 00 FF 37
+02 0E 01 40 80 00 00 00 04 F2 00 00 FF C4
+
+0 = 0x02
+1 = 0x0e
+2 = 0x01
+3 - Error 0x40 = e07 0x00 = no error, 0x20 = e08, 0x01 = e01, 0x08 = e06
+4 
+5
+6
+7
+8,9 - speed 0x1770 = 0km, 0x210 = 8.4=kmh, 0x110 = 16.4kmh (26 inch) 0x50= 55.9kmh
+10
+11
+12
+13 - CRC
