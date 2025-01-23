@@ -62,44 +62,50 @@ void calc_crc (uint8_t * buf, uint8_t size)
 
 #define PULSES_TO_CALC 10
 
-volatile unsigned long currentTime;
 volatile unsigned long firstPulseTime = 0; 
 volatile int pulseIndex = 0;             
 volatile unsigned long diffTimePulses = 0;
 volatile unsigned long lastPulseTime = 0; 
 
-float currentSpeed = 0.0;      
-
 unsigned int calculate_impulses(uint16_t speed_kmh_x10, uint16_t wheel_diameter) {
 
-    float circumference_m = M_PI * wheel_diameter * 0.0254 / 10 ;
-    float speed_mps = speed_kmh_x10 / 36.0;
+    float circumference_m = M_PI * (float)wheel_diameter * 0.00254  ;
+    float speed_mps = (float)speed_kmh_x10 / 36.0;
     float rotations_per_second = speed_mps / circumference_m;
-    float impulses = 600.0f / rotations_per_second;
+    //float impulses = 600.0f / rotations_per_second;
+    float impulses = 1000.0f / rotations_per_second;
 
     return (unsigned int)impulses;
 }
 
 uint32_t calculate_speed() {
+    uint16_t currentSpeed;
 
     if (diffTimePulses == 0)
     {
         currentSpeed = 0;
         return 0;
     }
-    float diffDistance = ((parameters.wheel_diameter * 0.00254 * PI * PULSES_TO_CALC) / 1000.0) / parameters.magnets_count;    
-    float speed = diffDistance * 3.6 * 1000 * 1000 * 1000/ diffTimePulses;
+    float diffDistance = (parameters.wheel_diameter * 2.54 * PI * PULSES_TO_CALC) / parameters.magnets_count;    
+    float speed = diffDistance * 3.6  * 1000/ diffTimePulses;
     if (speed < 1)
         speed = 0;
     if (speed > 99)
       speed = 99;
+
+    if ((micros() - firstPulseTime) > 500000)
+    {
+      speed = 0;
+    }
+
     currentSpeed = speed*10;
 
-    diffTimePulses = 0;
+    //diffTimePulses = 0;
     return currentSpeed;
 }
 
 void wheel_interrupt() {
+    unsigned long currentTime;
     currentTime = micros();
 
     if ((currentTime - lastPulseTime) < 1000)
@@ -123,6 +129,7 @@ void setup() {
     pinMode(CRUISE_PIN, OUTPUT);
     pinMode(BRAKE_BY_MOTOR_OUT_PIN, OUTPUT);
     pinMode(BRAKE_BY_REGEN_OUT_PIN, OUTPUT);
+    pinMode(BRAKE_IN_PIN, INPUT_PULLUP);
     
     tone(SPEED_TEST_PIN, 59); 
     pinMode(THROTTLE_OUT_PIN, OUTPUT);
@@ -185,7 +192,7 @@ void loop() {
 
           calc_crc(TX_Buffer,TX_BUFFER_SIZE);
           mySerial.write(TX_Buffer,TX_BUFFER_SIZE);
-
+          /*
           for (uint8_t i = 0; i < RX_BUFFER_SIZE; i++)
           {
             
@@ -194,6 +201,7 @@ void loop() {
             Serial.print(temp);
           }
           Serial.println();
+          */
         }
       }
   }
@@ -223,7 +231,7 @@ void loop() {
 
   if (!digitalRead(BRAKE_IN_PIN))
   {
-    if (parameters.e_brake)
+    if (!parameters.e_brake)
     {
       digitalWrite(BRAKE_BY_MOTOR_OUT_PIN, true);
       digitalWrite(BRAKE_BY_REGEN_OUT_PIN, false);
@@ -239,24 +247,20 @@ void loop() {
     digitalWrite(BRAKE_BY_MOTOR_OUT_PIN, true);
     digitalWrite(BRAKE_BY_REGEN_OUT_PIN, true);
   }
-/*
+
     static unsigned long last_print_time = 0;
     unsigned long current_time = millis();
 
     if (current_time - last_print_time >= 1000) {
         last_print_time = current_time;
         uint32_t speed = calculate_speed();
-        Serial.print("Magnets: ");
-        Serial.print(parameters.magnets_count);
-        Serial.println("");
-
-        Serial.print("Wheel: ");
-        Serial.print(parameters.wheel_diameter);
-        Serial.println("");
-
         Serial.print("Speed: ");
         Serial.print(speed);
-        Serial.println(" km/h");
+        Serial.print(" wheel_diameter: ");
+        Serial.print(parameters.wheel_diameter);
+        Serial.print(" magnets_count: ");
+        Serial.print(parameters.magnets_count);
+        Serial.println("");
     }
-    */
+    
 }
